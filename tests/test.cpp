@@ -16,7 +16,7 @@ int main()
 
     logger -> addAppender(file_appdener);
 
-    HPS_LOG_FMT_ERROR(logger, "test win11 fmt error %s", "aa");
+    HPS_LOG_FMT_ERROR(logger, "test win11 fmt error %d", 20062001);
     HPS_LOG_INFO(logger) << "test win11 info";
     HPS_LOG_ERROR(logger) << "test win11 error";  
 
