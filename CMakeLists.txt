@@ -21,7 +21,7 @@ add_library(hps_sf SHARED ${LIB_SRC})
 
 add_executable(test tests/test.cpp)
 add_dependencies(test hps_sf)
-target_link_libraries(test hps_sf)
+target_link_libraries(test hps_sf yaml-cpp)
 
 add_executable(test_config tests/test_config.cpp)
 add_dependencies(test_config hps_sf)
