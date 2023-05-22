@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC  -rdynamic -O0 -ggdb -std=c++11 -Wall -Wno-deprecated -Werror -Wno-unused-function  -shared -Wl,-soname,libhps_sf.so -o lib/libhps_sf.so CMakeFiles/hps_sf.dir/hps_sf/log.cpp.o CMakeFiles/hps_sf.dir/hps_sf/util.cpp.o CMakeFiles/hps_sf.dir/hps_sf/config.cpp.o   -L/usr/local/lib 
