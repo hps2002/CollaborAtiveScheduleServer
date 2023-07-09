@@ -8,6 +8,12 @@
 #include "log.h"
 #include <map>
 #include <yaml-cpp/yaml.h>
+#include <vector>
+#include <list>
+#include <map>
+#include <set>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace hps_sf{
 
@@ -31,7 +37,250 @@ protected:
     std::string m_description;
 };
 
+// 定义基础类型的转换类, 将F类型转成T类型
+template<class F, class T>
+class hps_LexicalCast
+{
+public:
+    T operator() (const F& v)
+    {
+        return boost::lexical_cast<T>(v);
+    }
+};
+
+// 偏特化类型转化：将string转化成vector
 template<class T>
+class hps_LexicalCast<std::string, std::vector<T> >
+{
+public:
+    std::vector<T> operator() (const std::string& v)
+    {
+        YAML::Node node = YAML::Load(v);
+        typename std::vector<T> vec;    //这里使用typename定义类型，因为在模板中T的类型没有确定下来，让编译器确定这是模板的中的类型不是成员变量
+        std::stringstream ss;
+        for (size_t i = 0; i < node.size(); i ++)
+        {
+            ss.str("");
+            ss << node[i];
+            vec.push_back(hps_LexicalCast<std::string, T>() (ss.str()));
+        }
+        return vec;
+    }
+};
+
+// 偏特化类型格式转化：将vector转化成string
+template<class T>
+class hps_LexicalCast<std::vector<T>, std::string >
+{
+public:
+    std::string operator() (const std::vector<T>& v)
+    {
+        YAML::Node node;
+        for (auto& i : v)
+        {
+            node.push_back(YAML::Load(hps_LexicalCast<T, std::string>() ( i)));
+        }
+        std::stringstream ss;
+        ss << node;
+        return ss.str();
+    }
+};
+
+// 偏特化类型转化：将string转化成list
+template<class T>
+class hps_LexicalCast<std::string, std::list<T> >
+{
+public:
+    std::list<T> operator() (const std::string& v)
+    {
+        YAML::Node node = YAML::Load(v);
+        typename std::list<T> vec;    //这里使用typename定义类型，因为在模板中T的类型没有确定下来，让编译器确定这是模板的中的类型不是成员变量
+        std::stringstream ss;
+        for (size_t i = 0; i < node.size(); i ++)
+        {
+            ss.str("");
+            ss << node[i];
+            vec.push_back(hps_LexicalCast<std::string, T>() (ss.str()));
+        }
+        return vec;
+    }
+};
+
+// 偏特化类型格式转化：将list转化成string
+template<class T>
+class hps_LexicalCast<std::list<T>, std::string >
+{
+public:
+    std::string operator() (const std::list<T>& v)
+    {
+        YAML::Node node;
+        for (auto& i : v)
+        {
+            node.push_back(YAML::Load(hps_LexicalCast<T, std::string>() (i)));
+        }
+        std::stringstream ss;
+        ss << node;
+        return ss.str();
+    }
+};
+
+// 偏特化类型转化：将string转化成set
+template<class T>
+class hps_LexicalCast<std::string, std::set<T> >
+{
+public:
+    std::set<T> operator() (const std::string& v)
+    {
+        YAML::Node node = YAML::Load(v);
+        typename std::set<T> vec;    //这里使用typename定义类型，因为在模板中T的类型没有确定下来，让编译器确定这是模板的中的类型不是成员变量
+        std::stringstream ss;
+        for (size_t i = 0; i < node.size(); i ++)
+        {
+            ss.str("");
+            ss << node[i];
+            vec.insert(hps_LexicalCast<std::string, T>() (ss.str()));
+        }
+        return vec;
+    }
+};
+
+// 偏特化类型格式转化：将vector转化成string
+template<class T>
+class hps_LexicalCast<std::set<T>, std::string >
+{
+public:
+    std::string operator() (const std::set<T>& v)
+    {
+        YAML::Node node;
+        for (auto& i : v)
+        {
+            node.push_back(YAML::Load(hps_LexicalCast<T, std::string>() ( i)));
+        }
+        std::stringstream ss;
+        ss << node;
+        return ss.str();
+    }
+};
+
+// 偏特化类型转化：将string转化成unordered_set
+template<class T>
+class hps_LexicalCast<std::string, std::unordered_set<T> >
+{
+public:
+    std::unordered_set<T> operator() (const std::string& v)
+    {
+        YAML::Node node = YAML::Load(v);
+        typename std::unordered_set<T> vec;    //这里使用typename定义类型，因为在模板中T的类型没有确定下来，让编译器确定这是模板的中的类型不是成员变量
+        std::stringstream ss;
+        for (size_t i = 0; i < node.size(); i ++)
+        {
+            ss.str("");
+            ss << node[i];
+            vec.insert(hps_LexicalCast<std::string, T>() (ss.str()));
+        }
+        return vec;
+    }
+};
+
+// 偏特化类型格式转化：将vector转化成string
+template<class T>
+class hps_LexicalCast<std::unordered_set<T>, std::string >
+{
+public:
+    std::string operator() (const std::unordered_set<T>& v)
+    {
+        YAML::Node node;
+        for (auto& i : v)
+        {
+            node.push_back(YAML::Load(hps_LexicalCast<T, std::string>() ( i)));
+        }
+        std::stringstream ss;
+        ss << node;
+        return ss.str();
+    }
+};
+
+// 偏特化类型转化：将string转化成map
+template<class T>
+class hps_LexicalCast<std::string, std::map<std::string, T> >
+{
+public:
+    std::map<std::string, T> operator() (const std::string& v)
+    {
+        YAML::Node node = YAML::Load(v);
+        typename std::map<std::string, T> vec;    //这里使用typename定义类型，因为在模板中T的类型没有确定下来，让编译器确定这是模板的中的类型不是成员变量
+        std::stringstream ss;
+        for (auto it = node.begin(); it != node.end(); it ++)
+        {
+            ss.str("");
+            ss << it -> second;
+            vec.insert(std::make_pair(it -> first.Scalar(), 
+                        hps_LexicalCast<std::string, T>() (ss.str())));
+        }
+        return vec;
+    }
+};
+
+// 偏特化类型格式转化：将map转化成string
+template<class T>
+class hps_LexicalCast<std::map<std::string, T>, std::string >
+{
+public:
+    std::string operator() (const std::map<std::string, T>& v)
+    {
+        YAML::Node node;
+        for (auto& i : v)
+        {
+            node[i.first] = YAML::Load(hps_LexicalCast<T, std::string>() (i.second)); 
+        }
+        std::stringstream ss;
+        ss << node;
+        return ss.str();
+    }
+};
+
+// 偏特化类型转化：将string转化成unordered_map
+template<class T>
+class hps_LexicalCast<std::string, std::unordered_map<std::string, T> >
+{
+public:
+    std::unordered_map<std::string, T> operator() (const std::string& v)
+    {
+        YAML::Node node = YAML::Load(v);
+        typename std::unordered_map<std::string, T> vec;    //这里使用typename定义类型，因为在模板中T的类型没有确定下来，让编译器确定这是模板的中的类型不是成员变量
+        std::stringstream ss;
+        for (auto it = node.begin(); it != node.end(); it ++)
+        {
+            ss.str("");
+            ss << it -> second;
+            vec.insert(std::make_pair(it -> first.Scalar(), 
+                        hps_LexicalCast<std::string, T>() (ss.str())));
+        }
+        return vec;
+    }
+};
+
+// 偏特化类型格式转化：将map转化成string
+template<class T>
+class hps_LexicalCast<std::unordered_map<std::string, T>, std::string >
+{
+public:
+    std::string operator() (const std::unordered_map<std::string, T>& v)
+    {
+        YAML::Node node;
+        for (auto& i : v)
+        {
+            node[i.first] = YAML::Load(hps_LexicalCast<T, std::string>() (i.second)); 
+        }
+        std::stringstream ss;
+        ss << node;
+        return ss.str();
+    }
+};
+
+// FromStr T operator(const std::string& )
+// ToStr std::string operator(const T & )
+template<class T, class FromStr = hps_LexicalCast<std::string, T>, class ToStr = hps_LexicalCast<T, std::string> >
 class hps_ConfigVar: public hps_ConfigVarBase{
 public:
     typedef std::shared_ptr<hps_ConfigVar> ptr;
@@ -47,7 +296,8 @@ public:
     {
         try
         {   
-            return boost::lexical_cast<std::string>(m_val);
+            // return boost::lexical_cast<std::string>(m_val);
+            return ToStr() (m_val);
         }
         catch (std::exception& e)
         {
@@ -62,7 +312,8 @@ public:
     {
         try
         {
-            m_val = boost::lexical_cast<T>(val);
+            // m_val = boost::lexical_cast<T>(val);
+            setValue(FromStr() (val));
         }
         catch (std::exception& e)
         {

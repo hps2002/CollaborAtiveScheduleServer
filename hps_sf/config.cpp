@@ -28,6 +28,7 @@ static void ListAllMember(const std::string& prefix, const YAML::Node& node, std
     }
 }
 
+// 加载Yaml文件
 void hps_Config::LoadFromYaml(const YAML::Node& root)
 {
     std::list<std::pair<std::string, const YAML::Node>> all_nodes;
