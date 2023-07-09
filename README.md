@@ -27,3 +27,10 @@ hps_Logger,对外使用的类，当输入日志级别大于等于hps_Loger的日
 hps_Appender，定义日志的输出落地点，实现了hps_StdoutLogAppender（控制台日志）、hps_FileLogAppender(文件日志)。都拥有自己的日志级别和日志格式，主要用于区分日志级别，将error日志，单独输出到一个文件中。
 
 hps_Formatter, 自定义日志的输出格式，通过字符串自定义的日志格式，仿照printf()的输出方法。
+
+## 配置系统
+
+配置系统的原则是：约定优于配置
+
+
+观看记录：已经看完常见STL容器类型转换
