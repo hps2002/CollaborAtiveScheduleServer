@@ -1,15 +1,37 @@
 logs:
     - name: root
       level: info
-      formatter: "%d%T%m%n"
+      formatter: '%d%T%m%n'
       appender:
           - type: hps_FileLogAppender
             file: log.txt
           - type: hps_StdoutLogAppender
     - name: system
       level: debug
-      formatter: "%d%T%m%n"
+      formatter: '%d%T%m%n'
       appender:
           - type: hps_FileLogAppender
             path: log.txt
           - type: hps_StdoutLogAppender
+
+huang:
+    port: 9900
+    value: 15
+
+system:
+    port: 8888
+    value: 15
+    int_vec:
+        - 10
+        - 30
+    int_list: [520, 1314, 817]
+    int_set: [20, 30, 40, 50, 60]
+    int_unordered_set: [666, 777,  888]
+    str_int_map: 
+          k : 30
+          j : 60
+          s : 90
+    str_int_umap:
+          h : 556
+          p : 557
+          s : 558

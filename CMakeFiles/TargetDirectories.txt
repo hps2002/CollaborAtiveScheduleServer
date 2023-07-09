@@ -1,5 +1,0 @@
-/home/ubuntu/hps_sf/CMakeFiles/rebuild_cache.dir
-/home/ubuntu/hps_sf/CMakeFiles/test_config.dir
-/home/ubuntu/hps_sf/CMakeFiles/edit_cache.dir
-/home/ubuntu/hps_sf/CMakeFiles/test.dir
-/home/ubuntu/hps_sf/CMakeFiles/hps_sf.dir

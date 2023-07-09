@@ -1,5 +1,5 @@
 # hps_sf
-
+[![Security Status](https://www.murphysec.com/platform3/v31/badge/1677911350636732416.svg)](https://www.murphysec.com/console/report/1677911350447988736/1677911350636732416)
 ## 构建方法
 下载到本地之后使用cmake进行外部构建，在项目文件中创建一个名为`build`的目录, 进入`build`中使用cmake进行项目构建。
 构建命令
