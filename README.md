@@ -32,5 +32,19 @@ hps_Formatter, 自定义日志的输出格式，通过字符串自定义的日�
 
 配置系统的原则是：约定优于配置
 
+```c++
+template<T, FromStr, Tostr>
+class CondifVar;
 
-观看记录：已经看完常见STL容器类型转换
+template<F, T>
+LexicalCast;
+
+// 容器偏特化， 目前支持vector
+// list，set, map, unordered_set, unordered_map
+// map、unordered_set 支持key = std::string
+// Config::Lookup(key), key相同
+// 类型不同，不会有报错，这个需要处理一下
+```
+
+自定义类型实现，需要实现sylar::LexcalCast, 偏特化  
+实现手，就可以支持Config解析自定义类型，自定义类型可以和常规SSTL容器一起使用。

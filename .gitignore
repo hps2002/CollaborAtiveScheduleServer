@@ -1,4 +1,7 @@
-lib/
-test/
-build/
-bin/
+.gitignore
+/lib/
+/test/
+/build/
+/bin/
+/README.md
+log.txt

@@ -6,6 +6,9 @@
 #include <list>
 
 hps_sf::hps_ConfigVar<int>::ptr g_int_value_config = hps_sf::hps_Config::Lookup("system.port", (int)8080, "system port");
+
+// hps_sf::hps_ConfigVar<float>::ptr g_int_valuex_config = hps_sf::hps_Config::Lookup("system.port", (float)8080, "system port");
+
 hps_sf::hps_ConfigVar<float>::ptr g_float_value_config = hps_sf::hps_Config::Lookup("huang.value", (float)10.2f, "huang value");
 
 hps_sf::hps_ConfigVar<std::vector<int> >::ptr g_vector_value_config = hps_sf::hps_Config::Lookup("system.int_vec", std::vector<int>{1, 2}, "huang int vec");
@@ -56,7 +59,7 @@ void test_yaml()
 
 void test_config()
 {
-    // HPS_LOG_INFO(HPS_LOG_ROOT()) << "before: " << g_int_value_config -> getValue();
+    HPS_LOG_INFO(HPS_LOG_ROOT()) << "before: " << g_int_value_config -> getValue();
     // HPS_LOG_INFO(HPS_LOG_ROOT()) << "before: " << g_float_value_config -> toString();
 #define XX(g_var, name, prefix) \
     { \
@@ -85,7 +88,7 @@ void test_config()
     
     hps_sf::hps_Config::LoadFromYaml(root);
 
-    // HPS_LOG_INFO(HPS_LOG_ROOT()) << "after: " << g_int_value_config -> getValue();
+    HPS_LOG_INFO(HPS_LOG_ROOT()) << "after: " << g_int_value_config -> getValue();
     // HPS_LOG_INFO(HPS_LOG_ROOT()) << "after: " << g_float_value_config -> toString();
 
     XX(g_vector_value_config, int_vec, after);
@@ -97,9 +100,107 @@ void test_config()
 
 }
 
+class Person{
+public:
+    std::string m_name = "";
+    int m_age = 0;
+    bool m_sex = 0;
+
+    std::string toString() const 
+    {
+        std::stringstream ss;
+        ss << "[Person name=" << m_name
+           << " age=" << m_age
+           << " sex=" << m_sex
+           << "]";
+           return ss.str();
+    }
+
+    bool operator==(const Person& oth) const {
+      return m_name == oth.m_name && 
+             m_age == oth.m_age &&
+             m_sex == oth.m_sex;
+    }
+};
+
+hps_sf::hps_ConfigVar<Person>::ptr g_person = 
+        hps_sf::hps_Config::Lookup("class.person", Person(), "system person");
+
+hps_sf::hps_ConfigVar<std::map<std::string, Person> >::ptr g_person_map = 
+        hps_sf::hps_Config::Lookup("class.map", std::map<std::string, Person>() , "system person");
+
+hps_sf::hps_ConfigVar<std::map<std::string,std::vector<Person>> >::ptr g_person_vec_map = 
+        hps_sf::hps_Config::Lookup("class.vec_map", std::map<std::string, std::vector<Person> >() , "system person");
+
+namespace hps_sf
+{
+    template<>
+    class hps_LexicalCast<std::string, Person>
+    {
+    public:
+        Person operator() (const std::string& v)
+        {
+            YAML::Node node = YAML::Load(v);
+            Person p;
+            p.m_name = node["name"].as<std::string>();
+            p.m_age = node["age"].as<int>();
+            p.m_sex = node["sex"].as<bool>();
+            return p;
+        }
+    };
+
+    template<>
+    class hps_LexicalCast<Person, std::string >
+    {
+    public:
+        std::string operator() (const Person& v)
+        {
+            YAML::Node node;
+            node["name"] = v.m_name;
+            node["age"] = v.m_age;
+            node["sex"] = v.m_sex;
+            std::stringstream ss;
+            ss << node;
+            return ss.str();
+        }
+    };
+}
+
+void test_class()
+{
+    HPS_LOG_INFO(HPS_LOG_ROOT()) << "before" << g_person -> getValue().toString() << " - " << g_person -> toString();
+
+#define XX_PM(g_var, prefix) \
+    {   \
+        auto m = g_var -> getValue(); \
+        for (auto& i : m) \
+        { \
+            HPS_LOG_INFO(HPS_LOG_ROOT()) << #prefix ": " << i.first << " - " << i.second.toString(); \
+        } \
+        HPS_LOG_INFO(HPS_LOG_ROOT()) << #prefix ": size: " << m.size();\
+    }
+
+    g_person -> addListener(10, [](const Person& old_value, const Person& new_value){
+      HPS_LOG_INFO(HPS_LOG_ROOT()) << "old_value=" << old_value.toString()
+                      << " new_value=" << new_value.toString();
+    });
+
+    XX_PM(g_person_map, "class.map before");
+    HPS_LOG_INFO(HPS_LOG_ROOT()) << "before: " << g_person_vec_map -> toString();
+
+    YAML::Node root = YAML::LoadFile("/home/ubuntu/hps_sf/bin/conf/log.yml");
+    hps_sf::hps_Config::LoadFromYaml(root);
+
+    HPS_LOG_INFO(HPS_LOG_ROOT()) << "after: " << g_person -> getValue().toString() << " - " << g_person -> toString();
+    XX_PM(g_person_map, "class.map after");
+
+    HPS_LOG_INFO(HPS_LOG_ROOT()) << "after: " << g_person_vec_map -> toString();
+}
+
 int main(int arg, char** argv)
 {
     // test_yaml();
-    test_config();
+    // test_config();
+    test_class();
     return 0;
 }
