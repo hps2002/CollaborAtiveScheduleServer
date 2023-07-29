@@ -48,3 +48,27 @@ LexicalCast;
 
 自定义类型实现，需要实现sylar::LexcalCast, 偏特化  
 实现手，就可以支持Config解析自定义类型，自定义类型可以和常规SSTL容器一起使用。
+
+## 日志系统整合配置系统
+```c++
+logs:
+    - name: root
+      level: (debug, info, warn,error,fatal)
+      formater: '%d%T%p%T%t%m%n'
+      appender: 
+        - type: (StdoutLogAppender, FileLogAppender)
+          level: (debug, info, warn, fatal)
+          file: /logs.xxx.log```
+```
+
+```c++
+hps_sf::hps_Logger g_logger = syslar::LoggerMgr::Gestance() -> getLogger(name);
+HPS_LOG_INFO(g_logger) << "xxxx log";
+```
+
+```c++
+static Logger::ptr g_log = HPS_LOG_NAME("system");
+// m_root, m_system -> m_root 当logger的appender为空使用root写logger
+```
+
+配置系统通过修改配置系统的文件控制日志的输出。

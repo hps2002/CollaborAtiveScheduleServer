@@ -2,13 +2,13 @@
 
 namespace hps_sf{
 
-hps_Config::hps_ConfigVarMap hps_Config::s_datas;
+// hps_Config::hps_ConfigVarMap hps_Config::s_datas;
 
 //查找当前命名的项，如果有的话就返回
 hps_ConfigVarBase::ptr hps_Config::LookupBase(const std::string& name)
 {
-    auto it = s_datas.find(name);
-    return it == s_datas.end() ? nullptr : it -> second;
+    auto it = GetDatas().find(name);
+    return it == GetDatas().end() ? nullptr : it -> second;
 }
 
 static void ListAllMember(const std::string& prefix, const YAML::Node& node, std::list<std::pair<std::string, const YAML::Node> >& output)

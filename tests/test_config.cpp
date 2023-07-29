@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <iostream>
 
 hps_sf::hps_ConfigVar<int>::ptr g_int_value_config = hps_sf::hps_Config::Lookup("system.port", (int)8080, "system port");
 
@@ -188,7 +189,7 @@ void test_class()
     XX_PM(g_person_map, "class.map before");
     HPS_LOG_INFO(HPS_LOG_ROOT()) << "before: " << g_person_vec_map -> toString();
 
-    YAML::Node root = YAML::LoadFile("/home/ubuntu/hps_sf/bin/conf/log.yml");
+    YAML::Node root = YAML::LoadFile("/home/ubuntu/hps_sf/bin/conf/test.yml");
     hps_sf::hps_Config::LoadFromYaml(root);
 
     HPS_LOG_INFO(HPS_LOG_ROOT()) << "after: " << g_person -> getValue().toString() << " - " << g_person -> toString();
@@ -197,10 +198,25 @@ void test_class()
     HPS_LOG_INFO(HPS_LOG_ROOT()) << "after: " << g_person_vec_map -> toString();
 }
 
+void test_log() {
+  static hps_sf::hps_Logger::ptr sys_log = HPS_LOG_NAME("system");
+  HPS_LOG_INFO(sys_log) << "hello system" << std::endl;
+
+  std::cout << hps_sf::hps_LoggerMgr::GetInstance() -> toYAMLString() << std::endl;
+  YAML::Node root = YAML::LoadFile("/home/ubuntu/hps_sf/bin/conf/log.yml");
+  hps_sf::hps_Config::LoadFromYaml(root);
+  std::cout << "============================" << std::endl;
+  std::cout << hps_sf::hps_LoggerMgr::GetInstance() -> toYAMLString() << std::endl; 
+  HPS_LOG_INFO(sys_log) << "hello system" << std::endl;
+  sys_log -> setFormatter("%d - %m%n");
+  HPS_LOG_INFO(sys_log) << "hello system" << std::endl;
+}
+
 int main(int arg, char** argv)
 {
     // test_yaml();
     // test_config();
-    test_class();
+    // test_class();
+    test_log();
     return 0;
 }

@@ -375,8 +375,8 @@ public:
     static typename hps_ConfigVar<T>::ptr Lookup(const std::string& name, 
                             const T& default_value, const std::string& description = "")
     {
-        auto it = s_datas.find(name);
-        if (it != s_datas.end())
+        auto it = GetDatas().find(name);
+        if (it != GetDatas().end())
         {
             auto tmp = std::dynamic_pointer_cast<hps_ConfigVar<T> > (it -> second);
             if (tmp)
@@ -398,7 +398,7 @@ public:
         }
 
         typename hps_ConfigVar<T>::ptr v(new hps_ConfigVar<T> (name, default_value, description));
-        s_datas[name] = v;
+        GetDatas()[name] = v;
         return v;
     }
 
@@ -406,8 +406,8 @@ public:
     template <class T>
     static typename hps_ConfigVar<T>::ptr Lookup(const std::string& name)
     {
-        auto it = s_datas.find(name);
-        if (it == s_datas.end())
+        auto it = GetDatas().find(name);
+        if (it == GetDatas().end())
         {
             return nullptr;
         }
@@ -415,10 +415,14 @@ public:
     }
 
     static void LoadFromYaml(const YAML::Node& root);
-
+   
     static hps_ConfigVarBase::ptr LookupBase(const std::string& name);
 private:
+  static hps_ConfigVarMap& GetDatas() 
+  {
     static hps_ConfigVarMap s_datas;
+    return s_datas;
+  }
 };
 
 

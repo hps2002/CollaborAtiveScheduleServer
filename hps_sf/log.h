@@ -35,6 +35,8 @@
 #define HPS_LOG_FMT_FATAL(logger, fmt, ...) HPS_LOG_FMT_LEVEL(logger, hps_sf::hps_LogLevel::FATAL, fmt, __VA_ARGS__)
 
 #define HPS_LOG_ROOT() hps_sf::hps_LoggerMgr::GetInstance() -> getRoot()
+#define HPS_LOG_NAME(name) hps_sf::hps_LoggerMgr::GetInstance() -> getLogger(std::string(name))
+
 
 namespace hps_sf
 {
@@ -54,6 +56,7 @@ public:
         FATAL = 5
     };
     static const char* ToString(hps_LogLevel::Level level);
+    static hps_LogLevel::Level FromString(const std::string& str);
 };
 
 // 日志事件
@@ -115,30 +118,38 @@ public:
         virtual void format(std::ostream& os, std::shared_ptr<hps_Logger> logger, hps_LogLevel::Level level, hps_LogEvent::ptr event) = 0;
     };
     void init();    //使用log4j的格式进行日志定义
+
+    bool isError() const {return m_error;}
+    const std::string getPattern() const {return m_pattern;}
 private:
     std::string m_pattern;
     std::vector<hps_FormatItem::ptr> m_items;
+    bool m_error = false;
 };
 
 //日志输出地
 class hps_LogAppender{
+friend class hps_Logger;
 public:
     typedef std::shared_ptr<hps_LogAppender> ptr;
     virtual ~hps_LogAppender() {}
     virtual void log(std::shared_ptr<hps_Logger> logger, hps_LogLevel::Level level, hps_LogEvent::ptr event) = 0;
-    void setFormatter(hps_LogFormatter::ptr val) { m_formatter = val; }
+    virtual std::string toYAMLString() = 0;
+    void setFormatter(hps_LogFormatter::ptr val);
     hps_LogFormatter::ptr getFormatter() const { return m_formatter; }
 
     hps_LogLevel::Level getLevel() const {return m_level;}
     void setLevel(hps_LogLevel::Level level) {m_level = level;}
 protected:
     hps_LogLevel::Level m_level = hps_LogLevel::DEBUG;
+    bool m_hasFormatter = false;
     hps_LogFormatter::ptr m_formatter;
 };
 
 //日志器
 class hps_Logger: public std::enable_shared_from_this<hps_Logger>
 {
+
 public:
     typedef std::shared_ptr<hps_Logger> ptr;
     hps_Logger(const std::string& name = "root");
@@ -152,36 +163,51 @@ public:
 
     void addAppender(hps_LogAppender::ptr appender);
     void delAppender(hps_LogAppender::ptr addender);
+    void clearAppenders();
     hps_LogLevel::Level getLevel() const {return m_level;}
     void setLevel(hps_LogLevel::Level val) { m_level = val; }
 
     const std::string getName() const { return m_name; }
-private:
+
+    void setFormatter (hps_LogFormatter::ptr val);
+    void setFormatter (const std::string& val);
+
+    hps_LogFormatter::ptr getFormatter();
+    
+    std::string toYAMLString();
+    
+    hps_Logger::ptr m_root;
     std::string m_name;             //日志名称
     hps_LogLevel::Level m_level;      //日志级别
     std::list<hps_LogAppender::ptr> m_appenders;           //Appender集合
     hps_LogFormatter::ptr m_formatter;
+    
 };
 
 //输出到控制台的Appender
 class hps_StdoutLogAppender : public hps_LogAppender
 {
+friend class hps_Logger;
 public:
     typedef std::shared_ptr<hps_StdoutLogAppender> ptr;
     void log(std::shared_ptr<hps_Logger> logger, hps_LogLevel::Level level, hps_LogEvent::ptr event) override;
+    std::string toYAMLString() override;
 private:
 };
 
 //输出到文件的Appender
 class hps_FileLogAppender : public hps_LogAppender
 {
+friend class hps_Logger;
 public:
     typedef std::shared_ptr<hps_FileLogAppender> ptr;
     
     hps_FileLogAppender(const std::string & filename);
     ~hps_FileLogAppender();
     void log(std::shared_ptr<hps_Logger> logger, hps_LogLevel::Level level, hps_LogEvent::ptr event) override; 
-    
+    std::string toYAMLString() override;
+
+
     //重新打开文件，文件打开成功，返回true；
     bool reopen(); 
 private:
@@ -197,6 +223,8 @@ public:
 
     void init();
     hps_Logger::ptr getRoot() const {return m_root;};
+
+    std::string toYAMLString();
 private:
     std::map<std::string, hps_Logger::ptr> m_loggers;
     hps_Logger::ptr m_root;
