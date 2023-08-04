@@ -83,3 +83,6 @@ static Logger::ptr g_log = HPS_LOG_NAME("system");
 信号量使用 `<semaphore.h>` 进行线程之间的通信
 
 写了读写锁保证线程安全和线程同步。
+
+使用Spinlock（自旋锁）优化读写锁造成的性能下降：冲突时间很短，通过自旋锁减少因为阻塞导致的系统调用次数。
+

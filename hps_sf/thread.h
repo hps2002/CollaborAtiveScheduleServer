@@ -6,6 +6,7 @@
 #include <pthread.h>
 #include <memory>
 #include <semaphore.h>
+#include <atomic>
 
 namespace hps_sf {
 
@@ -119,6 +120,62 @@ private:
   bool m_locked;
 };
 
+class hps_Mutex {
+public:
+  typedef hps_ScopedLockImpl<hps_Mutex> Lock;
+  hps_Mutex() {
+    pthread_mutex_init(&m_mutex, nullptr);
+  }
+  ~hps_Mutex() {
+    pthread_mutex_destroy(&m_mutex);
+  }
+
+  void lock() {
+    pthread_mutex_lock(&m_mutex);
+  }
+
+  void unlock() {
+    pthread_mutex_unlock(&m_mutex);
+  }
+private:
+  pthread_mutex_t m_mutex;
+};
+
+class hps_NullMutex {
+public:
+  typedef hps_ScopedLockImpl<hps_NullMutex> Lock;
+  hps_NullMutex() {}
+  ~hps_NullMutex() {}
+  void lock() {}
+  void unlock() {}
+  
+};
+
+
+// 使用自旋锁，让其在cpu中原地等待，减少用户态和内核态的切换次数，提高性能
+class hps_Spinlock {
+public:
+  typedef hps_ScopedLockImpl<hps_Spinlock> Lock;
+  hps_Spinlock() {
+    pthread_spin_init(&m_mutex, 0);
+  }
+
+  ~hps_Spinlock() {
+    pthread_spin_destroy(&m_mutex);
+  }
+
+  void lock() {
+    pthread_spin_lock(&m_mutex);
+  }
+
+  void unlock() {
+    pthread_spin_unlock(&m_mutex);
+  }
+
+private:
+  pthread_spinlock_t m_mutex;
+};
+
 class hps_RWMutex {
 public:
   typedef hps_ReadScopedLockImpl<hps_RWMutex> ReadLock;
@@ -144,6 +201,40 @@ public:
   }
 private:
   pthread_rwlock_t m_lock;
+};
+
+class hps_NullRWMutex {
+  typedef hps_ReadScopedLockImpl<hps_NullRWMutex> ReadLock;
+  typedef hps_WriteScopedLockImpl<hps_NullRWMutex> WriteLock;
+
+  hps_NullRWMutex() { }
+  ~hps_NullRWMutex() { }
+  void rdlock() {}
+  void wrunlock() {}
+  void unlock() {}
+};
+
+class hps_CASLock {
+public:
+  typedef hps_ScopedLockImpl<hps_CASLock> Lock;
+  hps_CASLock() {
+    m_mutex.clear();
+  }
+
+  ~hps_CASLock() {
+
+  }
+
+  void lock() {
+    while (std::atomic_flag_test_and_set_explicit(&m_mutex, std::memory_order_acquire));
+  }
+
+  void unlock() {
+    std::atomic_flag_clear_explicit(& m_mutex, std::memory_order_release);
+  }
+private:
+  volatile std::atomic_flag m_mutex;
+
 };
 
 class hps_Thread {

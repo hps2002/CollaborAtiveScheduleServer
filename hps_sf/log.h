@@ -12,6 +12,7 @@
 #include <map>
 #include "util.h"
 #include "singleton.h"
+#include "thread.h"
 
 #define HPS_LOG_LEVEL(logger, level) \
     if (logger -> getLevel() <= level) \
@@ -106,6 +107,7 @@ private:
 class hps_LogFormatter{
 public:
     typedef std::shared_ptr<hps_LogFormatter> ptr;
+    typedef hps_Spinlock MutexType;
     hps_LogFormatter(const std::string& pattern);//根据partern里面的格式进行输出
     std::string format(std::shared_ptr<hps_Logger> logger, hps_LogLevel::Level level, hps_LogEvent::ptr event);
     
@@ -132,17 +134,20 @@ class hps_LogAppender{
 friend class hps_Logger;
 public:
     typedef std::shared_ptr<hps_LogAppender> ptr;
+    typedef hps_Spinlock MutexType;
+
     virtual ~hps_LogAppender() {}
     virtual void log(std::shared_ptr<hps_Logger> logger, hps_LogLevel::Level level, hps_LogEvent::ptr event) = 0;
     virtual std::string toYAMLString() = 0;
     void setFormatter(hps_LogFormatter::ptr val);
-    hps_LogFormatter::ptr getFormatter() const { return m_formatter; }
+    hps_LogFormatter::ptr getFormatter(); 
 
     hps_LogLevel::Level getLevel() const {return m_level;}
     void setLevel(hps_LogLevel::Level level) {m_level = level;}
 protected:
     hps_LogLevel::Level m_level = hps_LogLevel::DEBUG;
     bool m_hasFormatter = false;
+    MutexType m_mutex; 
     hps_LogFormatter::ptr m_formatter;
 };
 
@@ -152,6 +157,8 @@ class hps_Logger: public std::enable_shared_from_this<hps_Logger>
 
 public:
     typedef std::shared_ptr<hps_Logger> ptr;
+    typedef hps_Spinlock MutexType;
+
     hps_Logger(const std::string& name = "root");
     void log(hps_LogLevel::Level level, hps_LogEvent::ptr event);
     
@@ -167,7 +174,7 @@ public:
     hps_LogLevel::Level getLevel() const {return m_level;}
     void setLevel(hps_LogLevel::Level val) { m_level = val; }
 
-    const std::string getName() const { return m_name; }
+    const std::string& getName() const { return m_name; }
 
     void setFormatter (hps_LogFormatter::ptr val);
     void setFormatter (const std::string& val);
@@ -181,7 +188,7 @@ public:
     hps_LogLevel::Level m_level;      //日志级别
     std::list<hps_LogAppender::ptr> m_appenders;           //Appender集合
     hps_LogFormatter::ptr m_formatter;
-    
+    MutexType m_mutex;
 };
 
 //输出到控制台的Appender
@@ -213,11 +220,13 @@ public:
 private:
     std::string m_filename;
     std::ofstream m_filestream;
+    uint64_t m_latsTime = 0;
 };
 
 class hps_LoggerManager 
 {
 public:
+    typedef hps_Spinlock MutexType;
     hps_LoggerManager();
     hps_Logger::ptr getLogger(const std::string& name);
 
@@ -226,6 +235,7 @@ public:
 
     std::string toYAMLString();
 private:
+    MutexType m_mutex;
     std::map<std::string, hps_Logger::ptr> m_loggers;
     hps_Logger::ptr m_root;
 };
