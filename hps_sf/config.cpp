@@ -7,6 +7,7 @@ namespace hps_sf{
 //查找当前命名的项，如果有的话就返回
 hps_ConfigVarBase::ptr hps_Config::LookupBase(const std::string& name)
 {
+    RWMutexType::ReadLock lock(GetMutex());
     auto it = GetDatas().find(name);
     return it == GetDatas().end() ? nullptr : it -> second;
 }
@@ -57,4 +58,15 @@ void hps_Config::LoadFromYaml(const YAML::Node& root)
     }
 }
 
+void hps_Config::Visit(std::function<void(hps_ConfigVarBase::ptr)> cb) {
+  RWMutexType::ReadLock lock(GetMutex());
+  hps_ConfigVarMap& m = GetDatas();
+  for (auto it = m.begin(); it != m.end(); it ++)
+  {
+    cb(it -> second);
+  }
 }
+
+ 
+
+} /* End namespace hps_sf */

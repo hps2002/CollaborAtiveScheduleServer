@@ -774,7 +774,7 @@ hps_sf::hps_ConfigVar<std::set<hps_LogDefine> >::ptr g_log_defines = hps_sf::hps
 struct hps_LogIniter {
     hps_LogIniter()
     {
-        g_log_defines -> addListener(0xF1E231,[](const std::set<hps_LogDefine>& old_value, const std::set<hps_LogDefine>& new_value)
+        g_log_defines -> addListener([](const std::set<hps_LogDefine>& old_value, const std::set<hps_LogDefine>& new_value)
         {
             HPS_LOG_INFO(HPS_LOG_ROOT()) << "on_logger_change_conf_changed";
             for (auto& i : new_value)
