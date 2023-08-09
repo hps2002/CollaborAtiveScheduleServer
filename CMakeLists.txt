@@ -16,6 +16,7 @@ set(LIB_SRC
     hps_sf/util.cpp
     hps_sf/config.cpp
     hps_sf/thread.cpp
+    hps_sf/fiber.cpp
     )
 
 add_library(hps_sf SHARED ${LIB_SRC})
@@ -39,6 +40,16 @@ add_executable(test_thread tests/test_thread.cpp)
 add_dependencies(test_thread hps_sf)
 # force_redefine_file_macro_for_sources(test_config)
 target_link_libraries(test_thread ${LIB_LIB} yaml-cpp)
+
+add_executable(test_util tests/test_util.cpp)
+add_dependencies(test_util hps_sf)
+# force_redefine_file_macro_for_sources(test_config)
+target_link_libraries(test_util ${LIB_LIB} yaml-cpp)
+
+add_executable(test_fiber tests/test_fiber.cpp)
+add_dependencies(test_fiber hps_sf)
+# force_redefine_file_macro_for_sources(test_config)
+target_link_libraries(test_fiber ${LIB_LIB} yaml-cpp)
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)

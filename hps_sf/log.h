@@ -16,7 +16,7 @@
 
 #define HPS_LOG_LEVEL(logger, level) \
     if (logger -> getLevel() <= level) \
-        hps_sf::hps_LogEventWarp(hps_sf::hps_LogEvent::ptr(new hps_sf::hps_LogEvent(logger, level, __FILE__, __LINE__, 0, hps_sf::GetThreadId(), hps_sf::GetFiberId(), time(0)))).getSS()
+        hps_sf::hps_LogEventWarp(hps_sf::hps_LogEvent::ptr(new hps_sf::hps_LogEvent(logger, level, __FILE__, __LINE__, 0, hps_sf::GetThreadId(), hps_sf::GetFiberId(), time(0), hps_sf::hps_Thread::GetName()))).getSS()
 
 #define HPS_LOG_DEBUG(logger)  HPS_LOG_LEVEL(logger, hps_sf::hps_LogLevel::DEBUG)
 #define HPS_LOG_INFO(logger)  HPS_LOG_LEVEL(logger, hps_sf::hps_LogLevel::INFO)
@@ -27,7 +27,7 @@
 #define HPS_LOG_FMT_LEVEL(looger, level, fmt, ...) \
     if (looger -> getLevel() <= level) \
         hps_sf::hps_LogEventWarp(hps_sf::hps_LogEvent::ptr(new hps_sf::hps_LogEvent(logger, level, __FILE__, \
-                                    __LINE__, 0, hps_sf::GetThreadId(), hps_sf::GetFiberId(), time(0)))).getEvent() -> format(fmt, __VA_ARGS__)
+                                    __LINE__, 0, hps_sf::GetThreadId(), hps_sf::GetFiberId(), time(0), hps_sf::hps_Thread::GetName()))).getEvent() -> format(fmt, __VA_ARGS__)
 
 #define HPS_LOG_FMT_DEBUG(logger, fmt, ...) HPS_LOG_FMT_LEVEL(logger, hps_sf::hps_LogLevel::DEBUG, fmt, __VA_ARGS__)
 #define HPS_LOG_FMT_INFO(logger, fmt, ...)  HPS_LOG_FMT_LEVEL(logger, hps_sf::hps_LogLevel::INFO, fmt, __VA_ARGS__)
@@ -65,13 +65,14 @@ class hps_LogEvent{
 public:
     typedef std::shared_ptr<hps_LogEvent> ptr;
     hps_LogEvent(std::shared_ptr<hps_Logger> logger, hps_LogLevel::Level level, const char* file, int32_t line, uint32_t elapse
-                , uint32_t threadId, uint32_t fiberId, uint64_t time);
+                , uint32_t threadId, uint32_t fiberId, uint64_t time, const std::string& thread_name);
     const char* getFile() const { return m_file; }
     int32_t getLine() const { return m_line; }
     uint32_t getElapse() const {return m_elapse; }
     uint32_t getThreadId() const {return m_threadId; }
     uint32_t getFiberId() const {return m_fiberId; }
     uint64_t getTime() const {return m_time; }
+    std::string getThreadName() const {return m_threadName;}
     std::string getContent() const { return m_ss.str(); }
     std::shared_ptr<hps_Logger> getLogger() const { return m_logger; }
     hps_LogLevel::Level getLevel() const {return m_level;}
@@ -86,6 +87,7 @@ private:
     uint32_t m_threadId = 0; // 线程号
     uint32_t m_fiberId = 0; //  协程号
     uint64_t m_time;    //时间
+    std::string m_threadName; //线程名
     std::stringstream m_ss;  //内容
 
     std::shared_ptr<hps_Logger> m_logger;  

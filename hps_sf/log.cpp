@@ -164,6 +164,16 @@ public:
     }
 };
 
+class hps_ThreadNameFormatItem: public hps_LogFormatter::hps_FormatItem
+{
+public:
+    hps_ThreadNameFormatItem(const std::string& str = "") {}
+    void format(std::ostream& os, hps_Logger::ptr logger, hps_LogLevel::Level level, hps_LogEvent::ptr event) override
+    {
+        os << event -> getThreadName();
+    }
+};
+
 class hps_DateTimeFormatItem: public hps_LogFormatter::hps_FormatItem
 {
 public:
@@ -241,13 +251,14 @@ private:
 
 hps_LogEvent::hps_LogEvent(std::shared_ptr<hps_Logger> logger, hps_LogLevel::Level level
             , const char* file, int32_t line, uint32_t elapse
-            , uint32_t threadId, uint32_t fiberId, uint64_t time)
+            , uint32_t threadId, uint32_t fiberId, uint64_t time, const std::string& thread_name)
     :m_file(file),
     m_line(line),
     m_elapse(elapse),
     m_threadId(threadId),
     m_fiberId(fiberId),
     m_time(time),
+    m_threadName(thread_name),
     m_logger(logger),
     m_level(level)
     {
@@ -258,7 +269,7 @@ hps_LogEvent::hps_LogEvent(std::shared_ptr<hps_Logger> logger, hps_LogLevel::Lev
 
 hps_Logger::hps_Logger(const std::string& name): m_name(name), m_level(hps_LogLevel::DEBUG)
 {   
-    m_formatter.reset(new hps_LogFormatter("%d{%Y-%m-%d %H:%M:%S}%T%t%T%F%T[%p]%T[%c]%T%f:%l%T%m%n"));
+    m_formatter.reset(new hps_LogFormatter("%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n"));
 }
 
 void hps_Logger::setFormatter (hps_LogFormatter::ptr val)
@@ -565,17 +576,18 @@ void hps_LogFormatter::init()
     #define XX(str, C) \
             {#str, [](const std::string& fmt) {return hps_FormatItem::ptr(new C(fmt));}}
 
-            XX(m, hps_MessageFormatItem),
-            XX(p, hps_LevelFormatItem),
-            XX(r, hps_ElapseFormatItem),
-            XX(c, hps_NameFormatItem),
-            XX(t, hps_ThreadIdFormatItem),  
-            XX(n, hps_NewLineFormatItem), 
-            XX(d, hps_DateTimeFormatItem),
-            XX(f, hps_FilenameFormatItem), 
-            XX(l, hps_LineFormatItem),
-            XX(T, hps_TabFormatItem),
-            XX(F, hps_FiberIdFormatItem), 
+            XX(m, hps_MessageFormatItem),           //消息
+            XX(p, hps_LevelFormatItem),             //日志级别
+            XX(r, hps_ElapseFormatItem),            //累积毫秒
+            XX(c, hps_NameFormatItem),              //日志名称
+            XX(t, hps_ThreadIdFormatItem),          //线程id
+            XX(n, hps_NewLineFormatItem),           //换行
+            XX(d, hps_DateTimeFormatItem),          //时间
+            XX(f, hps_FilenameFormatItem),          //文件名
+            XX(l, hps_LineFormatItem),              //行号
+            XX(T, hps_TabFormatItem),               //缩进
+            XX(F, hps_FiberIdFormatItem),           //协程号
+            XX(N, hps_ThreadNameFormatItem),        //线程名
     #undef XX
     };
 
