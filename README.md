@@ -1,5 +1,5 @@
 # hps_sf
-[![Security Status](https://www.murphysec.com/platform3/v31/badge/1677911350636732416.svg)](https://www.murphysec.com/console/report/1677911350447988736/1677911350636732416)
+
 ## 构建方法
 下载到本地之后使用cmake进行外部构建，在项目文件中创建一个名为`build`的目录, 进入`build`中使用cmake进行项目构建。
 构建命令
@@ -10,7 +10,7 @@ cmake ..
 make
 ```
 ## 简介
-这是一个高性能服务器的框架.
+这是一个使用协程进行调度的C++高性能服务器的框架.
 
 ## 日志系统
 按照log4j的模式进行日志系统的设计
@@ -89,3 +89,18 @@ static Logger::ptr g_log = HPS_LOG_NAME("system");
 完善日志系统：使用自旋锁解决写日志时线程冲突问题
 
 完善配置系统，使用读写锁解决修改配置系统时线程冲突问题
+
+## 协程 
+使用 `ucontext` 封装一个协程库，功能是实现协程的创建、切换、销毁。
+
+通过 `hps_Fiber::GetThis()` 设置获取正在执行的协程。  
+可以构造函数的方法生成新的协程，并且通过 `hps_Fiber::swapIn()` 切换到当前协程运行。  
+通过 `hps_Fiber::YieldToHold()` 挂起当前协程设置为Hold状态，让出主协程的位置。
+
+
+创建一个协程并且使用的例子：
+```c++
+hps_sf::hps_Fiber::GetThis(); // 获取当前协程
+hps_sf::hps_Fiber::ptr fiber(new hps_sf::hps_Fiber(func)); // 创建协程
+fiber -> swapIn(); // 切换到主协程运行。
+```

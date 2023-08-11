@@ -24,6 +24,10 @@ void test_fiber() {
   HPS_LOG_INFO(g_logger) << "main after end2"; 
 }
 
+void func() {
+  std::cout << "\nhuang pei shen\n";
+}
+
 int main() {
   hps_sf::hps_Thread::SetName("main");
   std::vector<hps_sf::hps_Thread::ptr> thrs;
