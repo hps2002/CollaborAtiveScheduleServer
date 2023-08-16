@@ -269,7 +269,7 @@ hps_LogEvent::hps_LogEvent(std::shared_ptr<hps_Logger> logger, hps_LogLevel::Lev
 
 hps_Logger::hps_Logger(const std::string& name): m_name(name), m_level(hps_LogLevel::DEBUG)
 {   
-    m_formatter.reset(new hps_LogFormatter("%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n"));
+    m_formatter.reset(new hps_LogFormatter("%d{%Y-%m-%d %H:%M:%S}%T%t%T%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n"));
 }
 
 void hps_Logger::setFormatter (hps_LogFormatter::ptr val)

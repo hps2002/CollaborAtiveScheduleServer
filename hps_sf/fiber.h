@@ -8,7 +8,9 @@
 
 namespace hps_sf {
 
+class hps_Scheduler;
 class hps_Fiber : public std::enable_shared_from_this<hps_Fiber> {
+friend class hps_Scheduler;
 public:
   typedef std::shared_ptr<hps_Fiber> ptr;
 
@@ -33,6 +35,7 @@ public:
   void swapOut(); //当前协程切换到后台
   
   uint64_t getId() const {return m_id;}
+  State getState() const {return m_state;}
 public:
   static void SetThis(hps_Fiber* f);
   static hps_Fiber::ptr GetThis(); //返回当前协程

@@ -16,7 +16,7 @@
 
 #define HPS_LOG_LEVEL(logger, level) \
     if (logger -> getLevel() <= level) \
-        hps_sf::hps_LogEventWarp(hps_sf::hps_LogEvent::ptr(new hps_sf::hps_LogEvent(logger, level, __FILE__, __LINE__, 0, hps_sf::GetThreadId(), hps_sf::GetFiberId(), time(0), hps_sf::hps_Thread::GetName()))).getSS()
+        hps_sf::hps_LogEventWarp(hps_sf::hps_LogEvent::ptr(new hps_sf::hps_LogEvent(logger, level, __FILE__, __LINE__, hps_sf::GetFiberId(), hps_sf::GetThreadId(), hps_sf::GetFiberId(), time(0), hps_sf::hps_Thread::GetName()))).getSS()
 
 #define HPS_LOG_DEBUG(logger)  HPS_LOG_LEVEL(logger, hps_sf::hps_LogLevel::DEBUG)
 #define HPS_LOG_INFO(logger)  HPS_LOG_LEVEL(logger, hps_sf::hps_LogLevel::INFO)
