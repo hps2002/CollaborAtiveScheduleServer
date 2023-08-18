@@ -49,7 +49,7 @@ hps_Scheduler* hps_Scheduler::GetThis() {
 void hps_Scheduler::start() {
   // 启动线程
   MutexType::Lock lock(m_mutex);
-  
+
   if (!m_stopping) {// 启动失败
     return;
   } 
@@ -61,6 +61,14 @@ void hps_Scheduler::start() {
   for (size_t i = 0; i < m_threadCount; i ++) {
     m_threads[i].reset(new hps_Thread(std::bind(&hps_Scheduler::run, this), m_name + "_" + std::to_string(i)));
     m_threadIds.push_back(m_threads[i] -> getId());
+  }
+  
+  lock.unlock();
+
+  if (m_rootFiber) {
+    // m_rootFiber -> swapIn();
+    m_rootFiber -> call();
+    HPS_LOG_INFO(g_logger) << "call out" << m_rootFiber -> getState();
   }
 }
 
@@ -107,9 +115,8 @@ void hps_Scheduler::setThis() {
 }
 
 void hps_Scheduler::run() {
-  // hps_Fiber::GetThis();
+  HPS_LOG_INFO(g_logger) << "run";
   setThis();
-
   if (hps_sf::GetThreadId() != m_rootThread) {
     t_fiber = hps_Fiber::GetThis().get();
   }
@@ -188,7 +195,7 @@ void hps_Scheduler::run() {
       m_idleThreadCount ++;
       idle_fiber -> swapIn();
       m_idleThreadCount --;
-      if (idle_fiber -> getState() != hps_Fiber::TERM || idle_fiber -> getState() != hps_Fiber::EXCEPT) {
+      if (idle_fiber -> getState() != hps_Fiber::TERM && idle_fiber -> getState() != hps_Fiber::EXCEPT) {
         idle_fiber -> m_state = hps_Fiber::HOLD;
       }  
     }

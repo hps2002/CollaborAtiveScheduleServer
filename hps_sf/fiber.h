@@ -33,7 +33,9 @@ public:
   void reset(std::function<void()> cb); //重置协程函数，并重置状态
   void swapIn(); //切换到当前协程执行
   void swapOut(); //当前协程切换到后台
-  
+
+  void call();
+
   uint64_t getId() const {return m_id;}
   State getState() const {return m_state;}
 public:
