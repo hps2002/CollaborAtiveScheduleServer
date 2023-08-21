@@ -18,7 +18,7 @@ hps_Scheduler::hps_Scheduler(size_t threads, bool use_caller, const std::string&
     HPS_ASSERT(GetThis() == nullptr);
     t_scheduler = this;
 
-    m_rootFiber.reset(new hps_Fiber(std::bind(&hps_Scheduler::run, this)));
+    m_rootFiber.reset(new hps_Fiber(std::bind(&hps_Scheduler::run, this), 0, true));
     hps_sf::hps_Thread::SetName(m_name);
 
     t_fiber = m_rootFiber.get();
@@ -65,11 +65,11 @@ void hps_Scheduler::start() {
   
   lock.unlock();
 
-  if (m_rootFiber) {
-    // m_rootFiber -> swapIn();
-    m_rootFiber -> call();
-    HPS_LOG_INFO(g_logger) << "call out" << m_rootFiber -> getState();
-  }
+  // if (m_rootFiber) {
+  //   // m_rootFiber -> swapIn();
+  //   m_rootFiber -> call();
+  //   HPS_LOG_INFO(g_logger) << "call out" << m_rootFiber -> getState();
+  // }
 }
 
 void hps_Scheduler::stop() {
@@ -101,9 +101,31 @@ void hps_Scheduler::stop() {
     tickle();
   }
 
-  if (stopping()) {
-    return ;
+  if (m_rootFiber) {
+    // while(!stopping()) {
+    //   if (m_rootFiber -> getState() == hps_Fiber::TERM || m_rootFiber -> getState() == hps_Fiber::EXCEPT) {
+    //     m_rootFiber.reset(new hps_Fiber(std::bind(&hps_Scheduler::run, this), 0, true));
+    //     HPS_LOG_INFO(g_logger) << "root fiber is term, reset";
+    //     t_fiber = m_rootFiber.get();
+    //   }
+    //   m_rootFiber -> call();
+    // }
+
+    if (!stopping()) { 
+      m_rootFiber -> call();
+    }
   }
+
+  std::vector<hps_Thread::ptr> thrs;
+  {
+    MutexType::Lock lock(m_mutex);
+    thrs.swap(m_threads);
+  }
+
+  for (auto& i : m_threads) {
+    i -> join();
+  }
+
   // if (exit_on_this_fiber) {
 
   // }
@@ -128,6 +150,7 @@ void hps_Scheduler::run() {
   while (1) {
     ft.reset();
     bool tickle_me = false;
+    bool is_active = false;
     // 取出一个需要执行的fiber
     {
       MutexType::Lock lock(m_mutex);
@@ -146,6 +169,9 @@ void hps_Scheduler::run() {
 
         ft = *it;
         m_fibers.erase(it);
+        m_activeThreadCount ++;
+        is_active = true;
+        break;
       }
     }
 
@@ -154,7 +180,6 @@ void hps_Scheduler::run() {
     }
 
     if (ft.fiber && (ft.fiber -> getState() != hps_Fiber::TERM || ft.fiber -> getState() != hps_Fiber::EXCEPT)) {
-      m_activeThreadCount ++;
       ft.fiber -> swapIn();
       m_activeThreadCount --;
 
@@ -173,7 +198,6 @@ void hps_Scheduler::run() {
       }
 
       ft.reset();
-      m_activeThreadCount ++;
       cb_fiber -> swapIn();
       m_activeThreadCount --;
 
@@ -187,6 +211,10 @@ void hps_Scheduler::run() {
         cb_fiber.reset();
       }
     } else {
+      if (is_active) {
+        m_activeThreadCount --;
+        continue;
+      }
       if (idle_fiber -> getState() == hps_Fiber::TERM) {
         HPS_LOG_INFO(g_logger) << "idle fiber term";
         break;
@@ -213,6 +241,9 @@ bool hps_Scheduler::stopping() {
 
 void hps_Scheduler::idle() {
   HPS_LOG_INFO(g_logger) << "idle";
+  while (!stopping()) {
+    hps_sf::hps_Fiber::YieldToHold();
+  }
 }
 
 }

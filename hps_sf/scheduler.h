@@ -23,7 +23,7 @@ public:
 
   const std::string& getName() const {return m_name;}
   static hps_Fiber* GetMainFiber();
-  hps_Scheduler* GetThis();
+  static hps_Scheduler* GetThis();
 
   void start();
   void stop();

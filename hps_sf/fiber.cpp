@@ -55,9 +55,10 @@ hps_Fiber::hps_Fiber() {
 }
 
 // 新生成的协程
-hps_Fiber::hps_Fiber(std::function<void()> cb, size_t statcksize):m_id(++ s_fiber_id),
+hps_Fiber::hps_Fiber(std::function<void()> cb, size_t statcksize, bool use_caller):m_id(++ s_fiber_id),
                                                                     m_cb(cb) 
 {
+
   ++ s_fiber_count;
   m_statcksize = statcksize ? statcksize : g_fiber_stack_size -> getValue();
 
@@ -69,9 +70,13 @@ hps_Fiber::hps_Fiber(std::function<void()> cb, size_t statcksize):m_id(++ s_fibe
   m_ctx.uc_stack.ss_sp = m_stack;
   m_ctx.uc_stack.ss_size = m_statcksize;
 
-  makecontext(&m_ctx, &hps_Fiber::MainFunc, 0);
-  HPS_LOG_DEBUG(g_logger) << "Fiber::Fiber Id = " << m_id;
+  if (!use_caller) {
+    makecontext(&m_ctx, &hps_Fiber::MainFunc, 0);
+  } else {
+    makecontext(&m_ctx, &hps_Fiber::CallerMainFunc, 0);
+  }
 
+  HPS_LOG_DEBUG(g_logger) << "Fiber::Fiber Id = " << m_id;
 }
 
 hps_Fiber::~hps_Fiber() {
@@ -127,17 +132,18 @@ void hps_Fiber::swapIn() {
   }
 }
 
-void hps_Fiber::swapOut() {
-  if (t_fiber != hps_Scheduler::GetMainFiber()) {
-    SetThis(hps_Scheduler::GetMainFiber());
-    if (swapcontext(&m_ctx, &hps_Scheduler::GetMainFiber() -> m_ctx))
-      HPS_ASSERT2(false, "swapcontext");
-  } else {
-    SetThis(t_threadFiber.get());
-    if (swapcontext(&m_ctx, &t_threadFiber -> m_ctx)) {
-      HPS_ASSERT2(false, "swapcontext");
-    }
+void hps_Fiber::back() {
+  SetThis(t_threadFiber.get());
+  if (swapcontext(&m_ctx, &t_threadFiber -> m_ctx)) {
+    HPS_ASSERT2(false, "swapcontext");
   }
+}
+
+
+void hps_Fiber::swapOut() {
+  SetThis(hps_Scheduler::GetMainFiber());
+  if (swapcontext(&m_ctx, &hps_Scheduler::GetMainFiber() -> m_ctx))
+    HPS_ASSERT2(false, "swapcontext");
 }
 
 void hps_Fiber::SetThis(hps_Fiber* f) {
@@ -191,6 +197,31 @@ void hps_Fiber::MainFunc() {
   auto raw_ptr = cur.get();
   cur.reset();
   raw_ptr -> swapOut();
+
+  HPS_ASSERT2(false, "never reach, fiberId = " + std::to_string(raw_ptr -> getId()));
+}
+
+void hps_Fiber::CallerMainFunc() {
+  hps_Fiber::ptr cur = GetThis();
+  HPS_ASSERT(cur);
+  try {
+    cur -> m_cb();
+    cur -> m_cb = nullptr;
+    cur -> m_state = TERM;
+  } catch (std::exception& e) {
+    cur -> m_state = EXCEPT;
+    HPS_LOG_ERROR(g_logger) << "Fiber Except: " << e.what()
+                            << "fiberId = " << cur ->getId()
+                            << std::endl
+                            << hps_sf::BacktraceToString();
+  } catch (...) {
+    cur -> m_state = EXCEPT;
+    HPS_LOG_ERROR(g_logger) << "Fiber Except";
+  }
+
+  auto raw_ptr = cur.get();
+  cur.reset();
+  raw_ptr -> back();
 
   HPS_ASSERT2(false, "never reach, fiberId = " + std::to_string(raw_ptr -> getId()));
 }

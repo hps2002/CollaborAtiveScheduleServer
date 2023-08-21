@@ -27,7 +27,7 @@ private:
   hps_Fiber();
 
 public:
-  hps_Fiber(std::function<void()> cb, size_t statcksize = 0);
+  hps_Fiber(std::function<void()> cb, size_t statcksize = 0, bool use_caller = false);
   ~hps_Fiber();
 
   void reset(std::function<void()> cb); //重置协程函数，并重置状态
@@ -35,6 +35,7 @@ public:
   void swapOut(); //当前协程切换到后台
 
   void call();
+  void back();
 
   uint64_t getId() const {return m_id;}
   State getState() const {return m_state;}
@@ -46,6 +47,7 @@ public:
 
   static uint64_t TotalFibel(); //计算总协程数
   static void MainFunc();
+  static void CallerMainFunc();
   static uint64_t GetFiberId();
 private:
   uint64_t m_id = 0;
