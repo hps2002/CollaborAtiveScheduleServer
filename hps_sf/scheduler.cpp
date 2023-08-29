@@ -7,7 +7,7 @@ namespace hps_sf {
 hps_sf::hps_Logger::ptr g_logger = HPS_LOG_NAME("system");
 
 static thread_local hps_Scheduler* t_scheduler = nullptr;
-static thread_local hps_Fiber* t_fiber = nullptr;
+static thread_local hps_Fiber* t_scheduler_fiber = nullptr;
 
 hps_Scheduler::hps_Scheduler(size_t threads, bool use_caller, const std::string& name):m_name(name){
   HPS_ASSERT(threads > 0);
@@ -21,7 +21,7 @@ hps_Scheduler::hps_Scheduler(size_t threads, bool use_caller, const std::string&
     m_rootFiber.reset(new hps_Fiber(std::bind(&hps_Scheduler::run, this), 0, true));
     hps_sf::hps_Thread::SetName(m_name);
 
-    t_fiber = m_rootFiber.get();
+    t_scheduler_fiber = m_rootFiber.get();
     m_rootThread = hps_sf::GetThreadId();
     m_threadIds.push_back(m_rootThread);
   } else {
@@ -31,19 +31,19 @@ hps_Scheduler::hps_Scheduler(size_t threads, bool use_caller, const std::string&
 }
 
 hps_Scheduler::~hps_Scheduler() {
+  // HPS_LOG_DEBUG(g_logger) << "m_stopping = " << m_stopping;
   HPS_ASSERT(m_stopping);
   if (GetThis() == this) {
     t_scheduler = nullptr;
   }
 }
 
-hps_Fiber* hps_Scheduler::GetMainFiber() {
-  return t_fiber;
-}
-
-
 hps_Scheduler* hps_Scheduler::GetThis() {
   return t_scheduler;
+}
+
+hps_Fiber* hps_Scheduler::GetMainFiber() {
+  return t_scheduler_fiber;
 }
 
 void hps_Scheduler::start() {
@@ -122,7 +122,7 @@ void hps_Scheduler::stop() {
     thrs.swap(m_threads);
   }
 
-  for (auto& i : m_threads) {
+  for (auto& i : thrs) {
     i -> join();
   }
 
@@ -139,15 +139,19 @@ void hps_Scheduler::setThis() {
 void hps_Scheduler::run() {
   HPS_LOG_INFO(g_logger) << "run";
   setThis();
+
+
   if (hps_sf::GetThreadId() != m_rootThread) {
-    t_fiber = hps_Fiber::GetThis().get();
+    t_scheduler_fiber = hps_Fiber::GetThis().get();
   }
 
   hps_Fiber::ptr idle_fiber(new hps_Fiber(std::bind(&hps_Scheduler::idle, this)));
   hps_Fiber::ptr cb_fiber;
 
   hps_FiberAndThread ft;
+  // HPS_LOG_DEBUG(g_logger) << "m_fiber.size() = " << m_fibers.size();
   while (1) {
+    // HPS_LOG_DEBUG(g_logger) << "enter pick fibers queue";
     ft.reset();
     bool tickle_me = false;
     bool is_active = false;
@@ -179,6 +183,7 @@ void hps_Scheduler::run() {
       tickle();
     }
 
+    // HPS_LOG_DEBUG(g_logger) << "ft.fiber = " << ft.fiber << ", fiber.state = " << ft.fiber -> getState();
     if (ft.fiber && (ft.fiber -> getState() != hps_Fiber::TERM || ft.fiber -> getState() != hps_Fiber::EXCEPT)) {
       ft.fiber -> swapIn();
       m_activeThreadCount --;

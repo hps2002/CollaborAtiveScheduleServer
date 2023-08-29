@@ -55,8 +55,7 @@ hps_Fiber::hps_Fiber() {
 }
 
 // 新生成的协程
-hps_Fiber::hps_Fiber(std::function<void()> cb, size_t statcksize, bool use_caller):m_id(++ s_fiber_id),
-                                                                    m_cb(cb) 
+hps_Fiber::hps_Fiber(std::function<void()> cb, size_t statcksize, bool use_caller):m_id(++ s_fiber_id), m_cb(cb) 
 {
 
   ++ s_fiber_count;
@@ -127,6 +126,7 @@ void hps_Fiber::swapIn() {
   SetThis(this);
   HPS_ASSERT(m_state != EXEC);
   m_state = EXEC;
+  // HPS_LOG_DEBUG(g_logger) << "GetMainFiber -> m_ctx: " << &hps_Scheduler::GetMainFiber() -> m_ctx << ", m_ctx: " << &m_ctx;
   if (swapcontext(&hps_Scheduler::GetMainFiber() -> m_ctx , &m_ctx)) {
     HPS_ASSERT2(false, "swapcontext");
   }

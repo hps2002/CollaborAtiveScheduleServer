@@ -6,6 +6,7 @@
 #include <list>
 
 #include "mutex.h"
+#include "log.h"
 #include "fiber.h"
 #include "thread.h"
 
@@ -30,6 +31,7 @@ public:
 
   template<class FiberOrCb>
   void schedule (FiberOrCb fc, int thread = -1) {
+    hps_sf::hps_Logger::ptr g_logger = HPS_LOG_ROOT();
     bool need_tickle = false;
     {
       MutexType::Lock lock(m_mutex);
@@ -62,9 +64,12 @@ protected:
   virtual void idle();
 
   void setThis();
+  bool hasIdleThreads() { return m_idleThreadCount > 0;}
+
 private:
   template<class FiberOrCb>
   bool scheduleNoLock(FiberOrCb fc, int thread) {
+    hps_sf::hps_Logger::ptr g_logger = HPS_LOG_ROOT();
     bool need_tickle = m_fibers.empty();
     hps_FiberAndThread ft(fc, thread);
     if (ft.fiber || ft.cb) {
@@ -88,8 +93,7 @@ private:
     } 
 
     // 交换cb
-    hps_FiberAndThread(std::function<void()> f, int thr):thread(thr) {
-      cb.swap(f);
+    hps_FiberAndThread(std::function<void()> f, int thr):cb(f), thread(thr) {
     }
 
     hps_FiberAndThread(std::function<void()>* f, int thr):thread(thr) {
@@ -118,7 +122,7 @@ protected:
   std::atomic<size_t> m_activeThreadCount = {0};
   std::atomic<size_t> m_idleThreadCount = {0};
   bool m_stopping = true;
-  bool m_autoStop = 0;
+  bool m_autoStop = false;
   int m_rootThread = 0;
 };
 

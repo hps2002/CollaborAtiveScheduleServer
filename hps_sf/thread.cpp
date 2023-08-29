@@ -23,7 +23,7 @@ hps_Semaphore::~hps_Semaphore() {
 
 void hps_Semaphore::wait() {
   if (sem_wait(&m_semaphore)) {
-    throw std::logic_error("wait error"); 
+    throw std::logic_error("sem_wait error"); 
   }
 }
 
@@ -42,6 +42,8 @@ const std::string& hps_Thread::GetName() {
 }
 
 void hps_Thread::SetName (const std::string& name) {
+  if (name.empty()) 
+    return;
   if (t_thread) {
     t_thread -> m_name = name;
   }

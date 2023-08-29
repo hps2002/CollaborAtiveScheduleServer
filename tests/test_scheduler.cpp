@@ -12,7 +12,7 @@ void test_fiber() {
 
 int main() {
   HPS_LOG_INFO(g_logger) << "main";
-  hps_sf::hps_Scheduler sc(3, true, "test");
+  hps_sf::hps_Scheduler sc(3, false);
   sc.start();
   sleep(2);
   HPS_LOG_INFO(g_logger) << "schedule";

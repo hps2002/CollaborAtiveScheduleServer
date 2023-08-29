@@ -13,14 +13,15 @@ class hps_Fiber : public std::enable_shared_from_this<hps_Fiber> {
 friend class hps_Scheduler;
 public:
   typedef std::shared_ptr<hps_Fiber> ptr;
-
+	
+	// 协程的状态
   enum State {
-    INIT,
-    HOLD,
-    EXEC,
-    TERM,
-    READY,
-    EXCEPT
+    INIT,	// 初始化
+    HOLD, // 暂停
+    EXEC, // 运行
+    TERM, // 结束
+    READY, // 准备
+    EXCEPT //异常
   };
 
 private:
@@ -54,7 +55,7 @@ private:
   uint32_t m_statcksize = 0;
   State m_state = INIT;
 
-  ucontext_t m_ctx;
+  ucontext_t m_ctx; // 当前协程的上下文
   void* m_stack = nullptr;
 
   std::function<void()> m_cb;

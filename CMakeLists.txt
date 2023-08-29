@@ -18,6 +18,7 @@ set(LIB_SRC
     hps_sf/thread.cpp
     hps_sf/fiber.cpp
     hps_sf/scheduler.cpp
+    hps_sf/iomanager.cpp
     )
 
 add_library(hps_sf SHARED ${LIB_SRC})
@@ -54,6 +55,10 @@ target_link_libraries(test_fiber ${LIB_LIB} yaml-cpp)
 add_executable(test_scheduler tests/test_scheduler.cpp)
 add_dependencies(test_scheduler hps_sf)
 target_link_libraries(test_scheduler ${LIB_LIB} yaml-cpp)
+
+add_executable(test_iomanager tests/test_iomanager.cpp)
+add_dependencies(test_iomanager hps_sf)
+target_link_libraries(test_iomanager ${LIB_LIB} yaml-cpp)
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
