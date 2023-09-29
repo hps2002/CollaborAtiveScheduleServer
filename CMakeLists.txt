@@ -19,7 +19,8 @@ set(LIB_SRC
     hps_sf/fiber.cpp
     hps_sf/scheduler.cpp
     hps_sf/iomanager.cpp
-    )
+    hps_sf/timer.cpp
+)
 
 add_library(hps_sf SHARED ${LIB_SRC})
 # force_redefine_file_macro_for_sources(hps_sf)
@@ -30,22 +31,18 @@ set(LIB_LIB
 
 add_executable(test tests/test.cpp)
 add_dependencies(test hps_sf)
-# force_redefine_file_macro_for_sources(test)
 target_link_libraries(test ${LIB_LIB} yaml-cpp)
 
 add_executable(test_config tests/test_config.cpp)
 add_dependencies(test_config hps_sf)
-# force_redefine_file_macro_for_sources(test_config)
 target_link_libraries(test_config ${LIB_LIB} yaml-cpp)
 
 add_executable(test_thread tests/test_thread.cpp)
 add_dependencies(test_thread hps_sf)
-# force_redefine_file_macro_for_sources(test_config)
 target_link_libraries(test_thread ${LIB_LIB} yaml-cpp)
 
 add_executable(test_util tests/test_util.cpp)
 add_dependencies(test_util hps_sf)
-# force_redefine_file_macro_for_sources(test_config)
 target_link_libraries(test_util ${LIB_LIB} yaml-cpp)
 
 add_executable(test_fiber tests/test_fiber.cpp)

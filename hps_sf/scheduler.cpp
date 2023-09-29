@@ -221,7 +221,7 @@ void hps_Scheduler::run() {
         continue;
       }
       if (idle_fiber -> getState() == hps_Fiber::TERM) {
-        HPS_LOG_INFO(g_logger) << "idle fiber term";
+        // HPS_LOG_INFO(g_logger) << "idle fiber term";
         break;
       }
 

@@ -4,10 +4,11 @@
 #include "scheduler.h"
 #include "mutex.h"
 #include "fiber.h"
+#include "timer.h"
 
 namespace hps_sf {
 
-class hps_IOManager: public hps_Scheduler {
+class hps_IOManager: public hps_Scheduler, public hps_TimerManager {
 public:
   typedef std::shared_ptr<hps_IOManager> ptr;
   typedef hps_RWMutex RWMutexType;
@@ -59,8 +60,10 @@ protected:
   void tickle() override;
   bool stopping() override;
   void idle() override;
+  void onTimerInsertedAtFront() override;
 
   void contextResize(size_t size);
+  bool stopping(uint64_t& timeout);
 private:
   int m_epfd = 0;
   int m_tickleFds[2];

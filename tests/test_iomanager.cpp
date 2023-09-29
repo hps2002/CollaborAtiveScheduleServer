@@ -49,12 +49,22 @@ void test1() {
   HPS_LOG_DEBUG(g_logger) << "test1() end";
 }
 
+hps_sf::hps_Timer::ptr s_timer;
+void test_timer() {
+  hps_sf::hps_IOManager iom(2);
+  s_timer = iom.addTimer(2000, [](){
+    HPS_LOG_INFO(g_logger) << "Hello timer";
+    static int i = 0;
+    if (++ i == 5) {
+        // s_timer -> cancel();
+        s_timer -> reset(5000, true);
+    }
+  }, 1);
+}
+
 int main(int argc, char** argv) {
-  test1();
-  // int p[2];
-  // int rt = pipe(p);
-  // std::cout << p[0] << " " << p[1];
-  // if (rt) std::cout << "false";
+  // test1();
+  test_timer();
   return 0;
 }
 

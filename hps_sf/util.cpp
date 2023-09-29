@@ -2,6 +2,7 @@
 #include <execinfo.h>
 #include "fiber.h"
 #include "log.h"
+#include <sys/time.h>
 
 hps_sf::hps_Logger::ptr g_logger = HPS_LOG_NAME("system");
 
@@ -43,6 +44,18 @@ std::string BacktraceToString(int size, int skip, const std::string& prefix) {
     ss << prefix << bt[i] << std::endl;
   }
   return ss.str();
+}
+
+uint64_t GetCurrentMS() {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return tv.tv_sec * 1000ul + tv.tv_usec / 1000;
+}
+
+uint64_t GetCurrentUS() {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return tv.tv_sec * 1000 * 1000ul + tv.tv_usec;
 }
 
 }

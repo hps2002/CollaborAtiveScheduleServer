@@ -104,3 +104,9 @@ hps_sf::hps_Fiber::GetThis(); // 获取当前协程
 hps_sf::hps_Fiber::ptr fiber(new hps_sf::hps_Fiber(func)); // 创建协程
 fiber -> swapIn(); // 切换到主协程运行。
 ```
+
+## 协程调度
+通过一个协程调度器基类，定义了调度的方法以及线程唤醒的方法。
+
+## 协程调度模块定时器
+定义一个定时器防止线程惊群
