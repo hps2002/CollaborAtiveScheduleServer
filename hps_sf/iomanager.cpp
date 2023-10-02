@@ -262,6 +262,7 @@ bool hps_IOManager::stopping() {
 
 bool hps_IOManager::stopping(uint64_t& timeout) {
   timeout = getNextTimer();
+  // HPS_LOG_DEBUG(g_logger) << "getNextTimer:" << timeout;
   return timeout == ~0ull
           && m_pendingEventCount == 0
           && hps_Scheduler::stopping();
@@ -278,6 +279,7 @@ void hps_IOManager::idle() {
     auto next_timeout = 0ull;
     if (stopping()) {
       next_timeout = getNextTimer();
+      // HPS_LOG_DEBUG(g_logger) << "next_timeout: " << next_timeout;
       if (next_timeout == ~0ull) {
         HPS_LOG_INFO(g_logger) << "name=" << getName() << " idle stopping exit";
         break;
@@ -289,6 +291,7 @@ void hps_IOManager::idle() {
       static const int MAX_TIMEOUT = 5000;
       if (next_timeout != ~0ull) {
         next_timeout = (int)next_timeout > MAX_TIMEOUT ? MAX_TIMEOUT : next_timeout;
+        // HPS_LOG_DEBUG(g_logger) << "next_timeout:" << next_timeout << ", MAX_TIMEOUT: " << MAX_TIMEOUT;
       } else {
         next_timeout = MAX_TIMEOUT;
       }
@@ -302,6 +305,7 @@ void hps_IOManager::idle() {
       }
     } while(true);
 
+    // 收集超时的时间并且将其调度
     std::vector<std::function<void()> > cbs;
     listExpiredCb(cbs);
     if (!cbs.empty()) {

@@ -1,5 +1,6 @@
 #include "timer.h"
 #include "util.h"
+#include <iostream>
 namespace hps_sf {
 
 hps_Timer::hps_Timer(uint64_t ms, std::function<void()> cb, bool recurring, hps_TimerManager* manager):m_recurring(recurring), m_ms(ms), m_cb(cb), m_manager(manager) {
@@ -169,9 +170,10 @@ void hps_TimerManager::addTimer(hps_Timer::ptr val, RWMutexType::WriteLock& lock
   }
 }
 
+// 检测服务器时间是否被调后了
 bool hps_TimerManager::detectClockRollver(uint64_t now_ms) {
   bool rollover = false;
-  if (now_ms < m_previousTime && m_previousTime - 60 * 60 * 1000) {
+  if (now_ms < m_previousTime && now_ms < (m_previousTime - 60 * 60 * 1000)) {
     rollover = true;
   }
   m_previousTime = now_ms;

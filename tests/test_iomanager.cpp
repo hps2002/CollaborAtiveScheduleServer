@@ -52,7 +52,7 @@ void test1() {
 hps_sf::hps_Timer::ptr s_timer;
 void test_timer() {
   hps_sf::hps_IOManager iom(2);
-  s_timer = iom.addTimer(2000, [](){
+  s_timer = iom.addTimer(500, [](){
     HPS_LOG_INFO(g_logger) << "Hello timer";
     static int i = 0;
     if (++ i == 5) {
@@ -63,7 +63,6 @@ void test_timer() {
 }
 
 int main(int argc, char** argv) {
-  // test1();
   test_timer();
   return 0;
 }
