@@ -288,18 +288,15 @@ void hps_IOManager::idle() {
 
     int rt = 0;
     do {
-      static const int MAX_TIMEOUT = 5000;
+      static const int MAX_TIMEOUT = 3000;
       if (next_timeout != ~0ull) {
         next_timeout = (int)next_timeout > MAX_TIMEOUT ? MAX_TIMEOUT : next_timeout;
-        // HPS_LOG_DEBUG(g_logger) << "next_timeout:" << next_timeout << ", MAX_TIMEOUT: " << MAX_TIMEOUT;
       } else {
         next_timeout = MAX_TIMEOUT;
       }
       rt = epoll_wait(m_epfd, events, 64, (int)next_timeout); 
-      // HPS_LOG_DEBUG(g_logger) << "rt = " << rt;
 
       if (rt < 0 && errno == EINTR) {
-
       } else {
         break;
       }
@@ -308,6 +305,7 @@ void hps_IOManager::idle() {
     // 收集超时的时间并且将其调度
     std::vector<std::function<void()> > cbs;
     listExpiredCb(cbs);
+
     if (!cbs.empty()) {
       schedule(cbs.begin(), cbs.end());
       cbs.clear();

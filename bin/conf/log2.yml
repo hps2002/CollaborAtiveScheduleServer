@@ -1,0 +1,6 @@
+logs:
+    - name: root
+      level: info
+      appenders:
+          - type: hps_FileLogAppender
+            file: mutex.txt

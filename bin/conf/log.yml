@@ -1,0 +1,17 @@
+logs:
+    - name: root
+      level: info
+      formatter: '%d%T%m%n'
+      appenders:
+          - type: hps_FileLogAppender
+            file: root.txt
+          - type: hps_StdoutLogAppender
+    - name: system
+      level: debug
+      formatter: '%d%T%m%n'
+      appenders:
+          - type: hps_FileLogAppender
+            file: system.txt
+            formatter: '%d%T[%p]%m%n'
+          - type: hps_StdoutLogAppender
+    

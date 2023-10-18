@@ -1,5 +1,7 @@
 #include "timer.h"
 #include "util.h"
+#include "log.h"
+
 #include <iostream>
 namespace hps_sf {
 
@@ -126,17 +128,21 @@ void hps_TimerManager::listExpiredCb(std::vector<std::function<void()> >& cbs) {
   }
   
   RWMutexType::WriteLock lock(m_mutex);
+// sylar原来的逻辑
+//   bool rollover = detectClockRollver(now_ms);
+// //   if (!rollover && ((*m_timers.begin()) -> m_next) > now_ms) {
+// //     return ;
+// //   } 
 
-  bool rollover = detectClockRollver(now_ms);
-  if (!rollover && ((*m_timers.begin()) -> m_next) > now_ms) {
-    return ;
-  } 
+//   hps_Timer::ptr now_timer(new hps_Timer(now_ms));
 
-  hps_Timer::ptr now_timer(new hps_Timer(now_ms));
+//   // 筛选出过期的定时器
+// //   auto it = rollover ? m_timers.end() : m_timers.lower_bound(now_timer);
+  
+  // 这里可能存在性能压力，应该使用二分查找进行优化
+  auto it = m_timers.begin();
 
-  auto it = rollover ? m_timers.end() : m_timers.lower_bound(now_timer);
-
-  while (it != m_timers.end() && (*it) -> m_next == now_ms) {
+  while (it != m_timers.end() && (*it) -> m_next == now_ms) {  
     it ++;
   }
 
@@ -173,7 +179,8 @@ void hps_TimerManager::addTimer(hps_Timer::ptr val, RWMutexType::WriteLock& lock
 // 检测服务器时间是否被调后了
 bool hps_TimerManager::detectClockRollver(uint64_t now_ms) {
   bool rollover = false;
-  if (now_ms < m_previousTime && now_ms < (m_previousTime - 60 * 60 * 1000)) {
+  if (now_ms < m_previousTime &&
+         now_ms < (m_previousTime - 60 * 60 * 1000)) {
     rollover = true;
   }
   m_previousTime = now_ms;

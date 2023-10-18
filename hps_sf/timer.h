@@ -28,7 +28,7 @@ private:
   bool m_recurring = false;      // 是否循环定时器
   uint64_t m_ms = 0;         // 时间间隔，间隔多长时间去执行
   uint64_t m_next = 0;    
-  std::function<void()> m_cb;        // 精确的执行时间
+  std::function<void()> m_cb;       
   hps_TimerManager* m_manager = nullptr;
   
 private:

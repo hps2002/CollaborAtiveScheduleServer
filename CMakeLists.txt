@@ -20,6 +20,7 @@ set(LIB_SRC
     hps_sf/scheduler.cpp
     hps_sf/iomanager.cpp
     hps_sf/timer.cpp
+    hps_sf/hook.cpp
 )
 
 add_library(hps_sf SHARED ${LIB_SRC})
@@ -27,6 +28,7 @@ add_library(hps_sf SHARED ${LIB_SRC})
 
 set(LIB_LIB
     hps_sf
+    dl
     pthread)
 
 add_executable(test tests/test.cpp)
@@ -56,6 +58,14 @@ target_link_libraries(test_scheduler ${LIB_LIB} yaml-cpp)
 add_executable(test_iomanager tests/test_iomanager.cpp)
 add_dependencies(test_iomanager hps_sf)
 target_link_libraries(test_iomanager ${LIB_LIB} yaml-cpp)
+
+add_executable(test_hook tests/test_hook.cpp)
+add_dependencies(test_hook hps_sf)
+target_link_libraries(test_hook ${LIB_LIB} yaml-cpp)
+
+add_executable(test_timer tests/test_timer.cpp)
+add_dependencies(test_timer hps_sf)
+target_link_libraries(test_timer ${LIB_LIB} yaml-cpp)
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)

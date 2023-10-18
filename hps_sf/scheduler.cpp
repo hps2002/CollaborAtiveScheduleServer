@@ -1,6 +1,7 @@
 #include "scheduler.h"
 #include "log.h"
 #include "macro.h"
+#include "hook.h"
 
 namespace hps_sf {
 
@@ -139,7 +140,7 @@ void hps_Scheduler::setThis() {
 void hps_Scheduler::run() {
   HPS_LOG_INFO(g_logger) << "run";
   setThis();
-
+  hps_sf::set_hook_enable(true);
 
   if (hps_sf::GetThreadId() != m_rootThread) {
     t_scheduler_fiber = hps_Fiber::GetThis().get();
