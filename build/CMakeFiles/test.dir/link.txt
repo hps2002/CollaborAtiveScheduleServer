@@ -1,0 +1,1 @@
+/usr/bin/c++  -rdynamic -O0 -ggdb -std=c++11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -rdynamic CMakeFiles/test.dir/tests/test.cpp.o -o /home/ubuntu/hps_sf/bin/test   -L/usr/local/lib  -Wl,-rpath,/usr/local/lib:/home/ubuntu/hps_sf/lib /home/ubuntu/hps_sf/lib/libhps_sf.so -ldl -lpthread -lyaml-cpp 
