@@ -7,6 +7,7 @@
 #include <memory>
 #include <semaphore.h>
 #include <atomic>
+#include <iostream>
 
 #include "mutex.h"
 
