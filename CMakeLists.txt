@@ -67,5 +67,10 @@ add_executable(test_timer tests/test_timer.cpp)
 add_dependencies(test_timer hps_sf)
 target_link_libraries(test_timer ${LIB_LIB} yaml-cpp)
 
+add_executable(test_newIDE tests/test_newIDE.cpp)
+add_dependencies(test_newIDE hps_sf)
+target_link_libraries(test_newIDE ${LIB_LIB} yaml-cpp)
+
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+
